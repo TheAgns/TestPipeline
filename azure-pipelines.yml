@@ -1,17 +1,11 @@
-# ASP.NET
-# Build and test ASP.NET projects.
-# Add steps that publish symbols, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/apps/aspnet/build-aspnet-4
-
 trigger:
 - main
 
 pool:
-  vmImage: 'windows-latest'
+  vmImage: 'macOS-latest' 
 
 variables:
   solution: '**/*.sln'
-  buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
 
 steps:
@@ -21,36 +15,33 @@ steps:
   inputs:
     restoreSolution: '$(solution)'
 
-- task: VSBuild@1
+- task: DotNetCoreCLI@2  
+  displayName: 'Build'
   inputs:
-    solution: '$(solution)'
-    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactStagingDirectory)"'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+    command: 'build'
+    projects: '$(solution)'
+    arguments: '--configuration $(buildConfiguration)'
 
-- task: VSTest@2
+- task: DotNetCoreCLI@2  
+  displayName: 'Test'
   inputs:
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+    command: 'test'
+    projects: '**/*.Tests.csproj'
+    arguments: '--configuration $(buildConfiguration)'
 
-- task: PublishSymbols@1
-  displayName: 'Publish symbols path: '
-  inputs:
-    SearchPattern: '**\bin\**\*.pdb'
-  continueOnError: true
-
-- task: CopyFiles@1
+- task: CopyFiles@2
   displayName: 'Copy Files to: $(build.artifactstagingdirectory)'
   inputs:
-     SourceFolder: '$(build.sourcedirectory)'
-     Contents: |
-      **\bin\$(BuildConfiguration)\**
-      src\*.testsettings
-     TargetFolder: '$(build.artifactstagingdirectory)'
+    SourceFolder: '$(Build.SourcesDirectory)'  
+    Contents: |
+      **/bin/$(buildConfiguration)/**
+      src/*.testsettings
+    TargetFolder: '$(build.artifactstagingdirectory)'
   condition: succeededOrFailed()
 
 - task: PublishBuildArtifacts@1
   displayName: 'Publish Artifact: drop'
   inputs:
-    PathToPublish: '$build.artifactstagingdirectory'
+    PathtoPublish: '$(build.artifactstagingdirectory)'
   condition: succeededOrFailed()
+
