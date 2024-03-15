@@ -44,9 +44,3 @@ steps:
   inputs:
     artifactName: 'drop'
     targetPath: '$(Build.ArtifactStagingDirectory)'
-
-- task: Docker@2
-  inputs:
-    repository: 'MarkusAgns/TestPipeline'
-    command: 'buildAndPush'
-    Dockerfile: '**/Dockerfile'
