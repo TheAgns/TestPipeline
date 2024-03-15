@@ -10,6 +10,11 @@ variables:
 
 steps:
 - task: NuGetToolInstaller@1
+- task: Docker@2
+  inputs:
+    repository: 'test'
+    command: 'buildAndPush'
+    Dockerfile: '**/Dockerfile'
 
 - task: NuGetCommand@2
   inputs:
